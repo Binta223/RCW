@@ -1,0 +1,61 @@
+﻿version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:4000
+      - BOOKING_SERVICE_URL=http://booking-service:4002
+    depends_on:
+      - auth-service
+      - booking-service
+
+  # Auth Service
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - MONGODB_URI=mongodb://mongodb/auth-service
+      - JWT_SECRET=your_jwt_secret
+    depends_on:
+      - mongodb
+
+  # Booking Service
+  booking-service:
+    build: ./services/booking-service
+    ports:
+      - "4002:4002"
+    environment:
+      - NODE_ENV=development
+      - PORT=4002
+      - MONGODB_URI=mongodb://mongodb/booking-service
+    depends_on:
+      - mongodb
+
+  # MongoDB
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  # Redis
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongodb_data:
+  redis_data:
